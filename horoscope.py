@@ -5,7 +5,6 @@ import datetime
 import schedule
 
 client = discord.Client()
-embed=discord.Embed(title="", color=0x808080)
 
 
 zodiac = ['aries','taurus', 'gemini', 'cancer', 'leo', 'virgo', 'libra', 'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces']
@@ -16,7 +15,7 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    if message.content.startswith('&u'):
+    if message.content.startswith('&h'):
         sign = message.content[3::].lower()
         if sign in zodiac:
             req = Request('https://www.astrology.com/horoscope/daily/' +sign+ '.html',
@@ -27,8 +26,10 @@ async def on_message(message):
             o = datetime.datetime.now().strftime('%Y/%m/%d')
 
             i = soup.findAll('p')[0].next
+            embed=discord.Embed(title="", color=0x808080)
             embed.add_field(name="sign", value=sign, inline=False)
             embed.add_field(name="horoscope", value=i, inline=False)
+            embed.set_footer(text=o)
             """schedule.every(24).hours.do(await client.send_message(message.channel, "```"))"""
 
             await client.send_message(message.channel, embed=embed)
