@@ -49,4 +49,4 @@ async def on_message(message):
         elif sign not in zodiac:
             await client.send_message(message.channel, "``Invalid sign``")
 
-client.run('MzI0NzAzNTAyODgwMjEwOTQ0.DQn_FQ.XJfOHyzP--0WnAUq3a7gEqb1K_Q')
+client.run('')
