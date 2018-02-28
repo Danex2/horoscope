@@ -3,11 +3,15 @@ from urllib.request import Request, urlopen
 import discord
 import datetime
 import schedule
+from datetime import date
+import calendar
+
 
 client = discord.Client()
 
 
 zodiac = ['aries','taurus', 'gemini', 'cancer', 'leo', 'virgo', 'libra', 'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces']
+weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
 
 @client.event
 async def on_message(message):
@@ -15,29 +19,34 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    if message.content.startswith('&h'):
+    if message.content.startswith('-h'):
         sign = message.content[3::].lower()
         if sign in zodiac:
-            req = Request('https://www.astrology.com/horoscope/daily/' +sign+ '.html',
+            req = Request('http://astrostyle.com/daily-horoscopes/' + sign + '-daily-horoscope/',
                           headers={'User-Agent': 'Mozilla/5.0'})
             url = urlopen(req)
             content = url.read()
             soup = BeautifulSoup(content, "html.parser")
             o = datetime.datetime.now().strftime('%Y/%m/%d')
+            todays_date = date.today()
+            td = datetime.date.today().strftime("%A").lower()
+            if td in weekdays:
+                i = soup.find("div", {"id": td }).findAll('p')[0].next
+            else:
+                i = "shits broke"
 
-            i = soup.findAll('p')[0].next
+
             embed=discord.Embed(title="", color=0x808080)
+            """embed.set_thumbnail(url="http://www.pngall.com/wp-content/uploads/2016/05/Scorpio-PNG-HD.png")"""
             embed.add_field(name="sign", value=sign, inline=False)
             embed.add_field(name="horoscope", value=i, inline=False)
-            embed.set_footer(text=o)
+            embed.set_footer(text="Date: " + o + " | " + "astrostyle.com")
             """schedule.every(24).hours.do(await client.send_message(message.channel, "```"))"""
 
             await client.send_message(message.channel, embed=embed)
         elif sign == "":
-            await client.send_message(message.channel, "```Usage: &h <sign>```")
+            await client.send_message(message.channel, "``-h <sign>``")
         elif sign not in zodiac:
-            await client.send_message(message.channel, "```Invalid sign```")
-        if message.content.startswith('&invite'):
-                await client.send_message(message.channel, "https://discordapp.com/oauth2/authorize?client_id=324703502880210944&scope=bot")
+            await client.send_message(message.channel, "``Invalid sign``")
 
-client.run('')
+client.run('MzI0NzAzNTAyODgwMjEwOTQ0.DQn_FQ.XJfOHyzP--0WnAUq3a7gEqb1K_Q')
