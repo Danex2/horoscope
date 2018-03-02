@@ -9,8 +9,12 @@ import calendar
 
 client = discord.Client()
 
+discordToken = open("token.txt","r").readline()
+zodiac = {'aries': 'https://imgur.com/TAgbGIE.png','taurus': 'https://imgur.com/YFDcGHO.png', 'gemini': 'https://imgur.com/YFDcGHO.png', 'cancer': 'https://imgur.com/VkZBJUD.png', 
+'leo': 'https://imgur.com/BKjzKhu.png', 'virgo': 'https://imgur.com/YFDcGHO.png', 'libra': 'https://imgur.com/YFDcGHO.png', 'scorpio': 'https://imgur.com/OPvMYU6.png', 
+'sagittarius': 'https://imgur.com/Mw5FyG6.png', 'capricorn': 'https://imgur.com/ZCgXIMU.png', 'aquarius': 'https://imgur.com/YiOam4U.png', 'pisces': 'https://imgur.com/YFDcGHO.png'}
 
-zodiac = ['aries','taurus', 'gemini', 'cancer', 'leo', 'virgo', 'libra', 'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces']
+
 weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
 
 @client.event
@@ -20,7 +24,9 @@ async def on_message(message):
         return
 
     if message.content.startswith('-h'):
-        sign = message.content[3::].lower()
+        args = message.content.split(" ")
+        sign = args[1]
+        sign = sign.lower()
         if sign in zodiac:
             req = Request('http://astrostyle.com/daily-horoscopes/' + sign + '-daily-horoscope/',
                           headers={'User-Agent': 'Mozilla/5.0'})
@@ -37,7 +43,7 @@ async def on_message(message):
 
 
             embed=discord.Embed(title="", color=0x808080)
-            """embed.set_thumbnail(url="http://www.pngall.com/wp-content/uploads/2016/05/Scorpio-PNG-HD.png")"""
+            embed.set_thumbnail(url=zodiac[sign])
             embed.add_field(name="sign", value=sign, inline=False)
             embed.add_field(name="horoscope", value=i, inline=False)
             embed.set_footer(text="Date: " + o + " | " + "astrostyle.com")
@@ -49,4 +55,4 @@ async def on_message(message):
         elif sign not in zodiac:
             await client.send_message(message.channel, "``Invalid sign``")
 
-client.run('')
+client.run(discordToken)
