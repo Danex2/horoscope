@@ -23,7 +23,7 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    if message.content.startswith('+['):
+    if message.content.startswith('-h'):
         args = message.content.split(" ")
         sign = args[1]
         sign = sign.lower()
