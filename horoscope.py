@@ -3,11 +3,15 @@ from urllib.request import Request, urlopen
 import discord
 import datetime
 import schedule
-from datetime import date
+from datetime import date, datetime, timedelta
 import calendar
+import time
+from discord.ext import commands
+import traceback
 
+description = '''daily horoscopes'''
+bot = commands.Bot(command_prefix='++-', description=description)
 
-client = discord.Client()
 
 discordToken = open("token.txt","r").readline()
 zodiac = {'aries': 'https://imgur.com/TAgbGIE.png','taurus': 'https://imgur.com/YFDcGHO.png', 'gemini': 'https://imgur.com/YFDcGHO.png', 'cancer': 'https://imgur.com/VkZBJUD.png', 
@@ -15,42 +19,55 @@ zodiac = {'aries': 'https://imgur.com/TAgbGIE.png','taurus': 'https://imgur.com/
 'sagittarius': 'https://imgur.com/Mw5FyG6.png', 'capricorn': 'https://imgur.com/ZCgXIMU.png', 'aquarius': 'https://imgur.com/YiOam4U.png', 'pisces': 'https://imgur.com/YFDcGHO.png'}
 
 
-weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
 
-@client.event
-async def on_message(message):
-    await client.change_presence(game=discord.Game(name="What's in store for you today?"))
-    if message.author == client.user:
-        return
-
-    if message.content.startswith('-h'):
-        args = message.content.split(" ")
-        sign = args[1]
-        sign = sign.lower()
-        if sign in zodiac:
-            req = Request('https://www.astrology.com/horoscope/daily/' + sign + '.html',
-                          headers={'User-Agent': 'Mozilla/5.0'})
-            url = urlopen(req)
-            content = url.read()
-            embed=discord.Embed(title="", color=0x808080)
-            soup = BeautifulSoup(content, "html.parser")
-            o = datetime.datetime.now().strftime('%Y/%m/%d')
-            td = datetime.date.today().strftime("%A").lower()
-            if td in weekdays:
-                i = soup.find("div", {"daily-horoscope"}).findAll('p')[0].next
-            else:
-                i = "shits broke"
+@bot.event
+async def on_ready():
+    print('Online!')
+    await bot.change_presence(game=discord.Game(name="owo"))
+    print(bot.user.name)
+    print(bot.user.id)
+    print('------')
 
 
-            embed.set_thumbnail(url=zodiac[sign])
-            embed.add_field(name="sign", value=sign, inline=False)
-            embed.add_field(name="horoscope", value=i, inline=False)
-            embed.set_footer(text="Date: " + o + " | " + "astrostyle.com")
+@bot.command()
+'''@commands.cooldown(1, 5, commands.BucketType.user)'''
+async def h(sign: str, y: str = None):
+    if sign in zodiac and y is None:
+        req = Request('https://www.astrology.com/horoscope/daily/' + sign + '.html',
+                            headers={'User-Agent': 'Mozilla/5.0'})
+        url = urlopen(req)
+        content = url.read()
+        embed=discord.Embed(title="", color=0xcc1df1)
+        soup = BeautifulSoup(content, "html.parser")
+        today = datetime.now().strftime('%Y/%m/%d')
+        i = soup.find("div", {"daily-horoscope"}).findAll('p')[0].next
 
-            await client.send_message(message.channel, embed=embed)
-        elif sign == "":
-            await client.send_message(message.channel, "``-h <sign>``")
-        elif sign not in zodiac:
-            await client.send_message(message.channel, "``Invalid sign``")
 
-client.run(discordToken)
+        '''embed.set_thumbnail(url=zodiac[sign])'''
+        embed.add_field(name="sign", value=sign, inline=False)
+        embed.add_field(name="horoscope", value=i, inline=False)
+        embed.set_footer(text="Date: " + today + " | " + "https://www.astrology.com")
+        await bot.say(embed=embed)
+    elif sign in zodiac and y is not None:
+        req = Request('https://www.astrology.com/horoscope/daily/yesterday/' + sign + '.html',
+                            headers={'User-Agent': 'Mozilla/5.0'})
+        url = urlopen(req)
+        content = url.read()
+        embed=discord.Embed(title="", color=0xcc1df1)
+        soup = BeautifulSoup(content, "html.parser")
+        i = soup.find("div", {"daily-horoscope"}).findAll('p')[0].next
+        yesterday = datetime.now() - timedelta(days=1)
+            
+        embed.add_field(name="sign", value=sign, inline=False)
+        embed.add_field(name="yesterday's horoscope", value=i, inline=False)
+        embed.set_footer(text="Date: " + str(yesterday.strftime('%Y/%m/%d')) + " | " + "https://www.astrology.com")
+        await bot.say(embed=embed)
+    elif sign == "":
+        await bot.say("``-h <sign>``")
+    elif sign not in zodiac:
+        await bot.say('``Invalid sign``')
+    
+    
+
+bot.run(discordToken)
+
